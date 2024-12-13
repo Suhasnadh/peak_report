@@ -72,7 +72,7 @@ def standardize_community_name(name):
     }
     
     for standard_name, variations in community_mapping.items():
-        if name in variations or any(var in name for p in variations if p in name):
+        if name in variations or any(np.var in name for p in variations if p in name):
             return standard_name
             
     return name
