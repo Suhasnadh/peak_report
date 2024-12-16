@@ -7,8 +7,7 @@ import numpy as np
 # Set page config with dark theme
 st.set_page_config(
     page_title="Housing Analysis",
-    layout="wide",
-    favicon="favicon.ico"  # Update this path to your favicon file
+    layout="wide", # Update this path to your favicon file
 )
 
 # Custom CSS for dark theme
