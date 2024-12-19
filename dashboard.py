@@ -675,7 +675,7 @@ def main():
 
         # Tab 5: General Demographics
             with tab1:
-                st.header("📋 General Demographics Breakdown")
+                st.header("📋 General Demographics")
 
                 # Create Two Tabs: Analytics and Detailed View
                 analytics_tab, detailed_tab = st.tabs(["📊 Analytics", "📋 Detailed View"])
@@ -684,7 +684,7 @@ def main():
                 # Analytics Tab
                 # ----------------------------------
                 with analytics_tab:
-                    st.subheader("📊 General Demographics Analytics")
+                    st.subheader("📊 Analytics")
                     # Show total number of students before applying filters
 
                     # Create two columns for charts
