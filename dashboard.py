@@ -7,7 +7,7 @@ import numpy as np
 # Set page config with dark theme
 st.set_page_config(
     page_title="Housing Analysis",
-    layout="wide", # Update this path to your favicon file
+    layout="wide",
 )
 
 # Custom CSS for dark theme
@@ -134,6 +134,7 @@ def get_community_stats(df):
             })
     
     return pd.DataFrame(community_stats)
+
 # Main Dashboard Code
 def main():
     st.title("🏠 Housing Analysis Dashboard")
@@ -150,16 +151,17 @@ def main():
             st.warning(f"✨ Data cleaned: Removed {duplicates_removed} duplicate entries")
         
         # Create main tabs
-            tab1, tab2, tab3, tab4 = st.tabs([
-                "📊 Roommate Analysis",
-                "👥 Community Analysis",
-                "📚 GPA Analysis",
-                "🛏️ DAC Analysis"
-            ])
-
+        tab1, tab2, tab3, tab4, tab5 = st.tabs([
+            "📋 General Demographics",
+            "👥 Community Analysis",
+            "📚 GPA Analysis",
+            "🛏️ DAC Analysis",
+            "📊 Roommate Analysis"
+        ])
         
+
         # Tab 1: Roommate Analysis
-        with tab1:
+        with tab5:
             st.header("Roommate Group Analysis")
             
             # Basic group statistics
@@ -322,8 +324,6 @@ def main():
             # Show the plot in Streamlit
             st.plotly_chart(fig, use_container_width=True)
 
-
-            
             st.subheader("Detailed Community Numbers")
             st.dataframe(community_data)
             
@@ -335,7 +335,8 @@ def main():
                         f"{row['Community']} Conversion Rate",
                         f"{conversion_rate}%"
                     )
-                    # Tab 3: GPA Analysis
+        
+        # Tab 3: GPA Analysis
         with tab3:
             st.header("📊 GPA Analysis")
             
@@ -540,167 +541,455 @@ def main():
                         "text/csv",
                         key='download-stats'
                     )
-                    # DAC Analysis
-            with tab4:
-                st.header("🛏️ DAC Analysis")
+        
+        # Tab 4: DAC Analysis
+        with tab4:
+            st.header("🛏️ DAC Analysis")
 
-                # Check for required columns
-                required_columns = ["DAC Recommendation Received", "Returner Status", "Single", "Received from DAC", "Room Type", "Meal Plan Waiver"]
-                if all(col in df.columns for col in required_columns):
-                    # Filter for people with DAC Recommendations
-                    dac_received = df[df["DAC Recommendation Received"] == True]
+            # Check for required columns
+            required_columns = ["DAC Recommendation Received", "Returner Status", "Single", "Received from DAC", "Room Type", "Meal Plan Waiver"]
+            if all(col in df.columns for col in required_columns):
+                # Filter for people with DAC Recommendations
+                dac_received = df[df["DAC Recommendation Received"] == True]
 
-                    # Convert 'Received from DAC' to datetime, handling errors
-                    dac_received["Received from DAC"] = pd.to_datetime(dac_received["Received from DAC"], errors='coerce')
+                # Convert 'Received from DAC' to datetime, handling errors
+                dac_received["Received from DAC"] = pd.to_datetime(dac_received["Received from DAC"], errors='coerce')
 
-                    # 1. DAC Recommendation Analysis
-                    st.subheader("DAC Recommendation Analysis")
+                # 1. DAC Recommendation Analysis
+                st.subheader("DAC Recommendation Analysis")
 
-                    dac_true_count = dac_received.shape[0]
-                    #dac_false_count = df[df["DAC Recommendation Received"] == False].shape[0]
+                dac_true_count = dac_received.shape[0]
 
-                    # Display metrics
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.metric("DAC Recommendation Received", dac_true_count)
-                    #with col2:
-                        #st.metric("People without Accommodation Recommendations", dac_false_count)
+                # Display metrics
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric("DAC Recommendation Received", dac_true_count)
 
-                    # Pie chart for DAC recommendation status
-                    #fig_dac = px.pie(
-                       # values=[dac_true_count, dac_false_count],
-                       ## title="DAC Recommendation Status",
-                       # color_discrete_sequence=px.colors.sequential.RdBu
-                  #  )
-                    #fig_dac.update_layout(
-                    #    plot_bgcolor='rgba(0,0,0,0)',
-                   #     paper_bgcolor='rgba(0,0,0,0)',
-                    #    font_color='white'
-                   # )
-                   # st.plotly_chart(fig_dac, use_container_width=True)
+                # 2. Returner vs New Students Analysis
+                st.subheader("Returner vs New Students with DAC Recommendation")
 
-                   # 2. Returner vs New Students Analysis
-                    st.subheader("Returner vs New Students with DAC Recommendation")
+                # Assuming "Classification Description" has values like "Returning" and "New"
+                returners_with_dac = dac_received[dac_received["Classification Description"] == "Returner"]
+                new_students_with_dac = dac_received[dac_received["Classification Description"] != "Returner"]
 
-                    # Assuming "Classification Description" has values like "Returning" and "New"
-                    returners_with_dac = dac_received[dac_received["Classification Description"] == "Returner"]
-                    new_students_with_dac = dac_received[dac_received["Classification Description"] != "Returner"]
+                # Display metrics
+                col3, col4 = st.columns(2)
+                with col3:
+                    st.metric("Returning Students with DAC", len(returners_with_dac))
+                with col4:
+                    st.metric("New Students with DAC", len(new_students_with_dac))
 
-                    # Display metrics
-                    col3, col4 = st.columns(2)
-                    with col3:
-                        st.metric("Returning Students with DAC", len(returners_with_dac))
-                    with col4:
-                        st.metric("New Students with DAC", len(new_students_with_dac))
+                # Pie chart for returners vs new students
+                fig_returners = px.pie(
+                    values=[len(returners_with_dac), len(new_students_with_dac)],
+                    names=["Returning Students", "New Students"],
+                    title="Comparison: Returning vs New Students with DAC Recommendation",
+                    color_discrete_sequence=["#0A5EB0", "#C9E6F0"]
+                )
+                fig_returners.update_layout(
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    font_color='white'
+                )
+                st.plotly_chart(fig_returners, use_container_width=True)
 
-                    # Pie chart for returners vs new students
-                    fig_returners = px.pie(
-                        values=[len(returners_with_dac), len(new_students_with_dac)],
-                        names=["Returning Students", "New Students"],
-                        title="Comparison: Returning vs New Students with DAC Recommendation",
-                        color_discrete_sequence=["#0A5EB0", "#C9E6F0"]
-                    )
-                    fig_returners.update_layout(
-                        plot_bgcolor='rgba(0,0,0,0)',
-                        paper_bgcolor='rgba(0,0,0,0)',
-                        font_color='white'
-                    )
-                    st.plotly_chart(fig_returners, use_container_width=True)
+                # 3. Single Accommodation Analysis
+                st.subheader("Single Accommodation Needs")
 
-                    # Interactive Student Selection with Buttons
-                    #st.subheader("Student Details with DAC Recommendation")
+                # Filter for students needing single accommodation
+                single_needed = dac_received[dac_received["Single"] == True]
 
-                    # Columns for buttons
-                    col1, col2 = st.columns(2)
+                # Identify room types containing "Single" (case-insensitive)
+                single_needed["Room Type (Single)"] = single_needed["Room Type"].str.contains("Single", case=False, na=False)
 
-                    # Button for Returning Students
-                    with col1:
-                        if st.button("View Returning Students Data"):
-                            st.dataframe(returners_with_dac[["Name", "Student Number", "DAC Recommendation Received", "Classification Description"]])
+                # Separate assigned and not assigned
+                single_assigned = single_needed[single_needed["Room Type (Single)"]]
+                single_not_assigned = single_needed[~single_needed["Room Type (Single)"]]
 
-                    # Button for New Students
-                    with col2:
-                        if st.button("View New Students Data"):
-                            st.dataframe(new_students_with_dac[["Name", "Student Number", "DAC Recommendation Received", "Classification Description"]])
+                # Calculate counts
+                total_single_needed = single_needed.shape[0]
+                assigned_single_count = single_assigned.shape[0]
+                not_assigned_single_count = single_not_assigned.shape[0]
 
-                    # 3. Single Accommodation Analysis
-                    st.subheader("Single Accommodation Needs")
+                # Display metrics
+                col5, col6, col7 = st.columns(3)
+                with col5:
+                    st.metric("Total Students Needing Single Accommodation", total_single_needed)
+                with col6:
+                    st.metric("Students Assigned Single Rooms", assigned_single_count)
+                with col7:
+                    st.metric("Students Not Assigned Single Rooms", not_assigned_single_count)
 
-                    # Filter for students needing single accommodation
-                    single_needed = dac_received[dac_received["Single"] == True]
-
-                    # Identify room types containing "Single" (case-insensitive)
-                    single_needed["Room Type (Single)"] = single_needed["Room Type"].str.contains("Single", case=False, na=False)
-
-                    # Separate assigned and not assigned
-                    single_assigned = single_needed[single_needed["Room Type (Single)"]]
-                    single_not_assigned = single_needed[~single_needed["Room Type (Single)"]]
-
-                    # Calculate counts
-                    total_single_needed = single_needed.shape[0]
-                    assigned_single_count = single_assigned.shape[0]
-                    not_assigned_single_count = single_not_assigned.shape[0]
-
-                    # Display metrics
-                    col5, col6, col7 = st.columns(3)
-                    with col5:
-                        st.metric("Total Students Needing Single Accommodation", total_single_needed)
-                    with col6:
-                        st.metric("Students Assigned Single Rooms", assigned_single_count)
-                    with col7:
-                        st.metric("Students Not Assigned Single Rooms", not_assigned_single_count)
-
-                    # Display table for students not assigned single rooms
-                    if not_assigned_single_count > 0:
-                        st.subheader("Details of Students Not Assigned Single Rooms")
-                        st.dataframe(single_not_assigned[["Name", "Room Type", "Single"]])
-                    else:
-                        st.info("All students needing single accommodations are assigned to single rooms.")
-
-                    # 4. Approved Accommodations Before June 31
-                    st.subheader("Approved Accommodations Before June 31")
-
-                    # Filter dates before June 31
-                    june_30_date = pd.Timestamp(year=2024, month=6, day=30)
-                    approved_before_june_31 = dac_received[dac_received["Received from DAC"] <= june_30_date].shape[0]
-                    approved_after_june_31 = dac_received[dac_received["Received from DAC"] > june_30_date].shape[0]
-
-                    # Display metric
-                    st.metric("Approved Accommodations Before June 31", approved_before_june_31)
-
-                    # Bar chart for timing of accommodations
-                    timing_counts = pd.DataFrame({
-                        "Approval Timing": ["Before June 31", "After June 31"],
-                        "Count": [approved_before_june_31, approved_after_june_31]
-                    })
-
-                    fig_timing_bar = px.bar(
-                        timing_counts,
-                        x="Approval Timing",
-                        y="Count",
-                        text="Count",
-                        title="Accommodation Approvals: Before vs After June 31",
-                        labels={"Approval Timing": "Timing", "Count": "Number of Approvals"},
-                        color="Approval Timing",
-                        color_discrete_sequence=["#ADD8E6", "#1E90FF"]
-                    )
-                    fig_timing_bar.update_layout(
-                        plot_bgcolor='rgba(0,0,0,0)',
-                        paper_bgcolor='rgba(0,0,0,0)',
-                        font_color='white'
-                    )
-                    st.plotly_chart(fig_timing_bar, use_container_width=True)
-                    # 5. Meal Plan Waiver Analysis
-                    st.subheader("Meal Plan Waiver Analysis")
-
-                    # Count the number of students with meal plan waivers
-                    meal_plan_waiver_count = df[df["Meal Plan Waiver"] == True].shape[0]
-
-                    # Display metrics for students with meal plan waivers only
-                    st.metric("Students with Meal Plan Waiver", meal_plan_waiver_count)
-
+                # Display table for students not assigned single rooms
+                if not_assigned_single_count > 0:
+                    st.subheader("Details of Students Not Assigned Single Rooms")
+                    st.dataframe(single_not_assigned[["Name", "Room Type", "Single"]])
                 else:
-                    st.error(f"Required columns {required_columns} are not available in the dataset.")
+                    st.info("All students needing single accommodations are assigned to single rooms.")
+
+                # 4. Approved Accommodations Before June 31
+                st.subheader("Approved Accommodations Before June 31")
+
+                # Filter dates before June 31
+                june_30_date = pd.Timestamp(year=2024, month=6, day=30)
+                approved_before_june_31 = dac_received[dac_received["Received from DAC"] <= june_30_date].shape[0]
+                approved_after_june_31 = dac_received[dac_received["Received from DAC"] > june_30_date].shape[0]
+
+                # Display metric
+                st.metric("Approved Accommodations Before June 31", approved_before_june_31)
+
+                # Bar chart for timing of accommodations
+                timing_counts = pd.DataFrame({
+                    "Approval Timing": ["Before June 31", "After June 31"],
+                    "Count": [approved_before_june_31, approved_after_june_31]
+                })
+
+                fig_timing_bar = px.bar(
+                    timing_counts,
+                    x="Approval Timing",
+                    y="Count",
+                    text="Count",
+                    title="Accommodation Approvals: Before vs After June 31",
+                    labels={"Approval Timing": "Timing", "Count": "Number of Approvals"},
+                    color="Approval Timing",
+                    color_discrete_sequence=["#ADD8E6", "#1E90FF"]
+                )
+                fig_timing_bar.update_layout(
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    font_color='white'
+                )
+                st.plotly_chart(fig_timing_bar, use_container_width=True)
+
+                # 5. Meal Plan Waiver Analysis
+                st.subheader("Meal Plan Waiver Analysis")
+
+                # Count the number of students with meal plan waivers
+                meal_plan_waiver_count = df[df["Meal Plan Waiver"] == True].shape[0]
+
+                # Display metrics for students with meal plan waivers only
+                st.metric("Students with Meal Plan Waiver", meal_plan_waiver_count)
+
+            else:
+                st.error(f"Required columns {required_columns} are not available in the dataset.")
+
+        # Tab 5: General Demographics
+            with tab1:
+                st.header("📋 General Demographics Breakdown")
+
+                # Create Two Tabs: Analytics and Detailed View
+                analytics_tab, detailed_tab = st.tabs(["📊 Analytics", "📋 Detailed View"])
+
+                # ----------------------------------
+                # Analytics Tab
+                # ----------------------------------
+                with analytics_tab:
+                    st.subheader("📊 General Demographics Analytics")
+                    # Show total number of students before applying filters
+
+                    # Create two columns for charts
+                    # Filter Section at the Top
+                    st.subheader("🔍 Apply Filters")
+                    col1, col2, col3 = st.columns(3)
+
+                    with col1:
+                        gender_filter = st.selectbox("Gender", get_sorted_unique_values(df, 'Gender'), key="gender_filter")
+                        building_filter = st.selectbox("Building", get_sorted_unique_values(df, 'Building'), key="building_filter")
+                        # Add GPA filter
+                        gpa_min, gpa_max = 0.0, 4.0  # Typical GPA range
+                        gpa_filter = st.slider("GPA Range", 
+                            min_value=0.0, 
+                            max_value=4.0, 
+                            value=(0.0, 4.0),  # Default to full range
+                            step=0.1,
+                            key="gpa_filter_analytics"
+                        )
+                    with col2:
+                        room_type_filter = st.selectbox("Room Type", get_sorted_unique_values(df, 'Room Type'), key="room_type_filter")
+                        major_filter = st.selectbox("Major", get_sorted_unique_values(df, 'Major'), key="major_filter")
+                    with col3:
+                        ethnicity_filter = st.selectbox("Ethnicity", get_sorted_unique_values(df, 'Ethnicity'), key="ethnicity_filter")
+                        academic_status_filter = st.selectbox("Academic Standing", get_sorted_unique_values(df, 'Academic Status'), key="academic_status_filter")
+
+                    # Apply Filters Dynamically
+                    filtered_df = df.copy()
+                    if gender_filter != "All":
+                        filtered_df = filtered_df[filtered_df["Gender"] == gender_filter]
+                    if building_filter != "All":
+                        filtered_df = filtered_df[filtered_df["Building"] == building_filter]
+                    if room_type_filter != "All":
+                        filtered_df = filtered_df[filtered_df["Room Type"] == room_type_filter]
+                    if major_filter != "All":
+                        filtered_df = filtered_df[filtered_df["Major"] == major_filter]
+                    if ethnicity_filter != "All":
+                        filtered_df = filtered_df[filtered_df["Ethnicity"] == ethnicity_filter]
+                    if academic_status_filter != "All":
+                        filtered_df = filtered_df[filtered_df["Academic Status"] == academic_status_filter]
+                    # Apply GPA filter
+                    filtered_df = filtered_df[
+                        (filtered_df['GPA'] >= gpa_filter[0]) & 
+                        (filtered_df['GPA'] <= gpa_filter[1])
+]
+                    # Interactive Total Students and Average GPA
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.metric("Total Students", len(filtered_df))
+                    with col2:
+                        # Only calculate GPA if there are students in the filtered dataset
+                        avg_gpa = filtered_df['GPA'].mean() if not filtered_df.empty else 0.00
+                        st.metric("Average GPA", f"{avg_gpa:.2f}")
+
+                    # Row 1: Gender Distribution and Room Type Distribution
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        st.subheader("Gender Distribution")
+                        gender_counts = filtered_df['Gender'].value_counts()
+                        fig_gender = px.pie(
+                            values=gender_counts.values, 
+                            names=gender_counts.index, 
+                            title="Gender Distribution",
+                            hole=0.3
+                        )
+                        st.plotly_chart(fig_gender, use_container_width=True)
+
+                    # Room Type Distribution in the second column
+                    with col2:
+                        st.subheader("Room Type Distribution")
+                        
+                        # Count occurrences of each room type
+                        room_type_counts = filtered_df['Room Type'].value_counts()
+
+                        # Select the top 8 room types
+                        top_room_types = room_type_counts.nlargest(8)
+
+                        # Create the bar chart for the top 8 room types
+                        fig_room_type = px.bar(
+                            x=top_room_types.index,
+                            y=top_room_types.values,
+                            title="Top 8 Room Type Distribution",
+                            labels={"x": "Room Type", "y": "Count"}
+                        )
+                        fig_room_type.update_layout(xaxis_tickangle=-45)
+                        st.plotly_chart(fig_room_type, use_container_width=True)
+
+                    # Create two columns
+                    col1, col2 = st.columns(2)
+
+                    # Academic Status Distribution in the first column
+                    with col1:
+                        st.subheader("📊 Academic Status Distribution")
+                        
+                        # Academic Status Distribution
+                        academic_status_counts = filtered_df['Academic Status'].value_counts()
+                        fig_academic = px.bar(
+                            x=academic_status_counts.index, 
+                            y=academic_status_counts.values,
+                            title="Academic Status Distribution",
+                            labels={"x": "Academic Status", "y": "Count"},
+                            text=academic_status_counts.values  # Show counts on the bars
+                        )
+                        fig_academic.update_layout(xaxis_tickangle=-45)
+                        st.plotly_chart(fig_academic, use_container_width=True)
+
+                    # Combined True/False Chart for Interests in the second column
+                    with col2:
+                        st.subheader("🌐 Combined Interest Analysis")
+
+                        # Columns to analyze
+                        interest_columns = ['AUAP Roommate Interest', 'Hall Council Interest', 'International Roommate Interest', 'Substance-Free Interest']
+
+                        # Ensure all interest columns are strings
+                        for col in interest_columns:
+                            filtered_df[col] = filtered_df[col].astype(str).str.upper()
+
+                        # Melt and group data for True/False counts
+                        interest_counts = (
+                            filtered_df[interest_columns]
+                            .melt(var_name="Interest", value_name="Response")
+                            .groupby(['Interest', 'Response']).size().reset_index(name='Count')
+                        )
+
+                        # Ensure Hall Council Interest is included even if its count is zero
+                        for interest in interest_columns:
+                            if interest not in interest_counts['Interest'].values:
+                                interest_counts = interest_counts.append({'Interest': interest, 'Response': 'TRUE', 'Count': 0}, ignore_index=True)
+
+                        # Filter to only show TRUE responses
+                        interest_counts = interest_counts[interest_counts['Response'] == 'TRUE']
+
+                        # Plot Combined Bar Chart with light blue color for all bars
+                        fig_interest = px.bar(
+                            interest_counts,
+                            x="Interest",
+                            y="Count",
+                            title="True Distribution for Roommate and Council Interests",
+                            labels={"Interest": "Interest Categories", "Count": "Number of Students"},
+                            text='Count',  # Show counts on the bars
+                            color_discrete_sequence=["#679DC7"]  # Set all bars to light blue
+                        )
+                        fig_interest.update_layout(
+                            xaxis=dict(title="Interest Categories"),
+                            yaxis=dict(title="Number of Students"),
+                            height=500
+                        )
+                        st.plotly_chart(fig_interest, use_container_width=True)
+                    # Row 4: Building Preference Analysis
+                    st.subheader("🏢 Building Preference Analysis")
+                    if 'Building preference' in filtered_df.columns:
+                        preferences_df = filtered_df.copy()
+                        preferences_df[['1st Preference', '2nd Preference', '3rd Preference']] = (
+                            preferences_df['Building preference']
+                            .str.split(',', expand=True)
+                            .iloc[:, :3]
+                            .apply(lambda col: col.str.strip())
+                        )
+
+                        # Combine preferences into a single DataFrame
+                        combined_prefs = pd.concat([
+                            preferences_df[['1st Preference']].rename(columns={'1st Preference': 'Building'}).assign(Preference="1st"),
+                            preferences_df[['2nd Preference']].rename(columns={'2nd Preference': 'Building'}).assign(Preference="2nd"),
+                            preferences_df[['3rd Preference']].rename(columns={'3rd Preference': 'Building'}).assign(Preference="3rd")
+                        ])
+
+                        combined_prefs = combined_prefs.dropna().reset_index(drop=True)
+                        combined_prefs['Building'] = combined_prefs['Building'].str.strip()
+                        building_counts = combined_prefs.groupby(['Building', 'Preference']).size().reset_index(name='Count')
+
+                        # Reorganize and sort data
+                        building_counts['Preference'] = pd.Categorical(building_counts['Preference'], categories=['1st', '2nd', '3rd'], ordered=True)
+                        building_counts = building_counts.sort_values(['Building', 'Preference'])
+
+                        # Clustered Bar Chart
+                        fig_building_prefs = px.bar(
+                            building_counts,
+                            x="Building",
+                            y="Count",
+                            color="Preference",
+                            barmode="group",
+                            title="Clustered Column Chart of Building Preferences",
+                            labels={"Count": "Number of Students", "Building": "Buildings"},
+                            text="Count",
+                            color_discrete_map={"1st": "#1f77b4", "2nd": "#ff7f0e", "3rd": "#2ca02c"}
+                        )
+                        fig_building_prefs.update_layout(
+                            xaxis=dict(title="Buildings", tickangle=-45),
+                            yaxis=dict(title="Number of Students"),
+                            legend_title="Preferences",
+                            height=600
+                        )
+                        st.plotly_chart(fig_building_prefs, use_container_width=True)
+                    else:
+                        st.warning("The column 'Building Preference' is not found in the dataset.")
+
+            # Row 5: Detailed View Tab
+                # ----------------------------------
+                # Detailed View Tab
+                # ----------------------------------
+                # Clean column names at the start
+                # Clean column names
+                    df.columns = (
+                        df.columns
+                        .str.strip()
+                        .str.replace(' ', '_')      # Replace spaces with underscores
+                        .str.replace(r'[^\w\s]', '', regex=True)  # Remove special characters
+                        .str.lower()
+                    )
+
+                    # Debugging: Print all column names to identify issues
+                    #st.write("Cleaned Column Names:", df.columns.tolist())
+
+                    # Correct column name handling
+                    with detailed_tab:
+                        st.subheader("📋 Detailed View")
+                        
+                        # Filter Section
+                        st.subheader("🔍 Apply Filters")
+                        col1, col2, col3 = st.columns(3)
+
+                        with col1:
+                            gender_filter = st.selectbox("Gender", get_sorted_unique_values(df, 'gender'), key="gender_filter_unique")
+                            main_r_code_filter = st.selectbox("Main R Code", get_sorted_unique_values(df, 'main_r_code'), key="main_r_code_filter_unique")
+                            building_filter = st.selectbox("Building", get_sorted_unique_values(df, 'building'), key="building_filter_unique")
+
+                        with col2:
+                            room_type_filter = st.selectbox("Room Type", get_sorted_unique_values(df, 'room_type'), key="room_type_filter_unique")
+                            academic_status_filter = st.selectbox("Academic Status", get_sorted_unique_values(df, 'academic_status'), key="academic_status_filter_unique")
+                            ethnicity_filter = st.selectbox("Ethnicity", get_sorted_unique_values(df, 'ethnicity'), key="ethnicity_filter_unique")
+
+                        with col3:
+                            sd_esa_filter = st.selectbox("SD/ESA", ["All", "Yes", "No"], key="sd_esa_filter_unique")
+                            #in_state_filter = st.selectbox("In State", ["All", "Yes", "No"], key="in_state_filter_unique")
+                            first_generation_filter = st.selectbox("First Generation Student", ["All", "TRUE", "FALSE"], key="first_gen_filter_unique")
+
+                        # Numeric Range Filters
+                        age_min, age_max = int(df['age'].min()), int(df['age'].max())
+                        age_filter = st.slider("Age Range", age_min, age_max, (age_min, age_max), key="age_filter_unique")
+
+                        gpa_min, gpa_max = df['gpa'].min(), df['gpa'].max()
+                        gpa_filter = st.slider("GPA Range", float(gpa_min), float(gpa_max), (float(gpa_min), float(gpa_max)), key="gpa_filter_unique")
+
+                        # Apply Filters
+                        filtered_df = df.copy()
+
+                        # Handle "Has SD/ESA" with correct column name
+                        sd_esa_column = [col for col in df.columns if 'sd' in col and 'esa' in col][0]  # Find correct column dynamically
+
+                        # Normalize boolean-like columns
+                        filtered_df[sd_esa_column] = filtered_df[sd_esa_column].astype(str).str.lower()
+                        filtered_df['first_generation_student'] = filtered_df['first_generation_student'].astype(str).str.upper()
+
+                        # Apply Filters
+                        if sd_esa_filter != "All":
+                            # Convert "Yes" and "No" to "TRUE" and "FALSE"
+                            sd_esa_value = 'TRUE' if sd_esa_filter == "Yes" else 'FALSE'
+                            filtered_df = filtered_df[filtered_df[sd_esa_column] == sd_esa_value.lower()]
+
+                        # Other filters
+                        if gender_filter != "All":
+                            filtered_df = filtered_df[filtered_df["gender"] == gender_filter]
+                        if main_r_code_filter != "All":
+                            filtered_df = filtered_df[filtered_df["main_r_code"] == main_r_code_filter]
+                        if building_filter != "All":
+                            filtered_df = filtered_df[filtered_df["building"] == building_filter]
+                        if room_type_filter != "All":
+                            filtered_df = filtered_df[filtered_df["room_type"] == room_type_filter]
+                        if academic_status_filter != "All":
+                            filtered_df = filtered_df[filtered_df["academic_status"] == academic_status_filter]
+                        if ethnicity_filter != "All":
+                            filtered_df = filtered_df[filtered_df["ethnicity"] == ethnicity_filter]
+                        if first_generation_filter != "All":
+                            filtered_df = filtered_df[filtered_df["first_generation_student"] == first_generation_filter.upper()]
+
+                        # Apply numeric range filters
+                        filtered_df = filtered_df[(filtered_df['age'] >= age_filter[0]) & (filtered_df['age'] <= age_filter[1])]
+                        filtered_df = filtered_df[(filtered_df['gpa'] >= gpa_filter[0]) & (filtered_df['gpa'] <= gpa_filter[1])]
+
+                        # Display Data
+                        required_columns = [
+                            'name', 'student_number', 'gender', 'main_r_code', 'building', 'room', 'room_type',
+                            sd_esa_column, 'age', 'priority_date', 'enrollment_class', 'academic_status',
+                            'first_generation_student', 'gpa', 'hours_enrolled', 'in_state_resident', 'major',
+                            'ethnicity', 'substancefree_interest', 'auap_roommate_interest',
+                            'hall_council_interest', 'international_roommate_interest', 'room_tier_preference'
+                        ]
+
+                        if not filtered_df.empty:
+                            display_df = filtered_df[required_columns]
+                            st.success(f"Filtered data contains {len(display_df):,} rows")
+                            st.dataframe(display_df)
+
+                            # Download Button
+                            st.download_button(
+                                label="📥 Download Filtered Data",
+                                data=display_df.to_csv(index=False).encode('utf-8'),
+                                file_name="filtered_detailed_view.csv",
+                                mime="text/csv"
+                            )
+                        else:
+                            st.warning("No data available for the selected filters.")
+
+                            # Display a message if no file is uploaded
     else:
         st.info("Please upload your CSV file to begin the analysis")
 
