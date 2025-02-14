@@ -12,13 +12,13 @@ if "theme_choice" not in st.session_state:
     st.session_state.theme_choice = "Light"
 
 # Sidebar Theme Selection
-st.sidebar.header("Theme Selection")
-theme_choice = st.sidebar.radio("Choose Theme:", ["Light", "Dark"], index=0)
+#st.sidebar.header("Theme Selection")
+#theme_choice = st.sidebar.radio("Choose Theme:", ["Light", "Dark"], index=0)
 
 # Check if the theme is changed and update session state
-if theme_choice != st.session_state.theme_choice:
-    st.session_state.theme_choice = theme_choice
-    st.rerun()  # ✅ Use st.rerun() instead of the deprecated st.experimental_rerun()
+#if theme_choice != st.session_state.theme_choice:
+    #st.session_state.theme_choice = theme_choice
+    #st.rerun()  # ✅ Use st.rerun() instead of the deprecated st.experimental_rerun()
 
 # Apply Theme Dynamically
 if st.session_state.theme_choice == "Light":
