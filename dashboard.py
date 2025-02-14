@@ -725,7 +725,7 @@ def main():
                     with col3:
                         ethnicity_filter = st.selectbox("Ethnicity", get_sorted_unique_values(df, 'Ethnicity'), key="ethnicity_filter")
                         academic_status_filter = st.selectbox("Academic Standing", get_sorted_unique_values(df, 'Academic Status'), key="academic_status_filter")
-                        enrollment_class_filter = st.selectbox("Enrollment Class", df['Enrollment Class'].unique(), index=0)
+                        enrollment_class_filter = st.selectbox("Enrollment Class", ["All"] + list(df['Enrollment Class'].unique()), index=0)
 
                     # Apply Filters Dynamically
                     filtered_df = df.copy()
@@ -741,7 +741,7 @@ def main():
                         filtered_df = filtered_df[filtered_df["Ethnicity"] == ethnicity_filter]
                     if academic_status_filter != "All":
                         filtered_df = filtered_df[filtered_df["Academic Status"] == academic_status_filter]
-                    if enrollment_class_filter:
+                    if enrollment_class_filter != "All":
                         filtered_df = filtered_df[filtered_df['Enrollment Class'] == enrollment_class_filter]
                     # Apply GPA filter
                     filtered_df = filtered_df[
@@ -939,6 +939,12 @@ def main():
                             sd_esa_filter = st.selectbox("SD/ESA", ["All", "Yes", "No"], key="sd_esa_filter_unique")
                             #in_state_filter = st.selectbox("In State", ["All", "Yes", "No"], key="in_state_filter_unique")
                             first_generation_filter = st.selectbox("First Generation Student", ["All", "TRUE", "FALSE"], key="first_gen_filter_unique")
+                            enrollment_class_filter = st.selectbox(
+                                                        "Enrollment Class", 
+                                                        ["All"] + list(df['enrollment_class'].unique()), 
+                                                        index=0,
+                                                        key="enrollment_class_filter_detailed"  # Add unique key for detailed view tab
+                                                    )
 
                         # Numeric Range Filters
                         age_min, age_max = int(df['age'].min()), int(df['age'].max())
@@ -978,6 +984,8 @@ def main():
                             filtered_df = filtered_df[filtered_df["ethnicity"] == ethnicity_filter]
                         if first_generation_filter != "All":
                             filtered_df = filtered_df[filtered_df["first_generation_student"] == first_generation_filter.upper()]
+                        if enrollment_class_filter != "All":
+                            filtered_df = filtered_df[filtered_df['enrollment_class'] == enrollment_class_filter]
 
                         # Apply numeric range filters
                         filtered_df = filtered_df[(filtered_df['age'] >= age_filter[0]) & (filtered_df['age'] <= age_filter[1])]
