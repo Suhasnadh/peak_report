@@ -162,8 +162,6 @@ def main():
         df_original = pd.read_csv(uploaded_file)
         df, duplicates_removed = preprocess_data(df_original)
         
-        if duplicates_removed > 0:
-            st.warning(f"✨ Data cleaned: Removed {duplicates_removed} duplicate entries")
         
         # Create main tabs
         tab1, tab2, tab3, tab4, tab5 = st.tabs([
