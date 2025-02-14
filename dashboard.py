@@ -1,20 +1,27 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
+import plotly.io as pio
 import numpy as np
-import plotly.io as pio  # ✅ Added Plotly renderer fix
 
-# Set Plotly renderer for hosted environments
 # Set the page configuration
 st.set_page_config(page_title="Housing Analysis Dashboard", layout="wide")
 
-# Theme Selection
+# Initialize session state for theme if not set
+if "theme_choice" not in st.session_state:
+    st.session_state.theme_choice = "Light"
+
+# Sidebar Theme Selection
 st.sidebar.header("Theme Selection")
 theme_choice = st.sidebar.radio("Choose Theme:", ["Light", "Dark"], index=0)
 
+# Check if the theme is changed and update session state
+if theme_choice != st.session_state.theme_choice:
+    st.session_state.theme_choice = theme_choice
+    st.rerun()  # ✅ Use st.rerun() instead of the deprecated st.experimental_rerun()
+
 # Apply Theme Dynamically
-if theme_choice == "Light":
+if st.session_state.theme_choice == "Light":
     theme_background = "white"
     theme_text = "black"
     plotly_template = "plotly_white"
@@ -47,7 +54,6 @@ def update_chart_layout(fig):
         yaxis_title_font_color=theme_text,
     )
     return fig
-
 
 # Helper Functions
 def get_sorted_unique_values(df, column):
@@ -719,6 +725,7 @@ def main():
                     with col3:
                         ethnicity_filter = st.selectbox("Ethnicity", get_sorted_unique_values(df, 'Ethnicity'), key="ethnicity_filter")
                         academic_status_filter = st.selectbox("Academic Standing", get_sorted_unique_values(df, 'Academic Status'), key="academic_status_filter")
+                        enrollment_class_filter = st.selectbox("Enrollment Class", df['Enrollment Class'].unique(), index=0)
 
                     # Apply Filters Dynamically
                     filtered_df = df.copy()
@@ -734,6 +741,8 @@ def main():
                         filtered_df = filtered_df[filtered_df["Ethnicity"] == ethnicity_filter]
                     if academic_status_filter != "All":
                         filtered_df = filtered_df[filtered_df["Academic Status"] == academic_status_filter]
+                    if enrollment_class_filter:
+                        filtered_df = filtered_df[filtered_df['Enrollment Class'] == enrollment_class_filter]
                     # Apply GPA filter
                     filtered_df = filtered_df[
                         (filtered_df['GPA'] >= gpa_filter[0]) & 
