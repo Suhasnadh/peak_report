@@ -8,37 +8,57 @@ import plotly.io as pio  # ✅ Added Plotly renderer fix
 # Set Plotly renderer for hosted environments
 pio.renderers.default = "browser"
 
-# Set page config with dark theme
-st.set_page_config(
-    page_title="Housing Analysis",
-    layout="wide",
-)
-
+# Custom CSS to handle both Light & Dark themes dynamically
 st.markdown("""
     <style>
-        /* Use Streamlit theme settings dynamically */
-        html[data-theme="light"] body {
-            color: black;
+        /* Apply dynamic color changes based on Streamlit theme */
+        :root {
+            --text-color: black;
+            --bg-color: white;
         }
-        html[data-theme="dark"] body {
-            color: white;
+        html[data-theme="dark"] {
+            --text-color: white;
+            --bg-color: #0e1117;
         }
+        
+        body {
+            color: var(--text-color);
+            background-color: var(--bg-color);
+        }
+        
+        /* Make metric boxes look consistent with theme */
         .stMetric {
-            background-color: var(--background-color-secondary);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             padding: 1rem;
             border-radius: 0.5rem;
             margin: 0.5rem 0;
-            border: 1px solid var(--background-color-tertiary);
+            border: 1px solid var(--text-color);
+        }
+        
+        /* Tab styling */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 8px;
+        }
+        .stTabs [data-baseweb="tab"] {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border-radius: 4px 4px 0px 0px;
+            padding: 10px 20px;
+        }
+        .stTabs [aria-selected="true"] {
+            background-color: var(--text-color);
+            color: var(--bg-color);
         }
     </style>
 """, unsafe_allow_html=True)
 
-# 📌 Function to dynamically update chart colors
+# Function to apply theme colors to charts dynamically
 def update_chart_layout(fig):
     fig.update_layout(
         template="plotly_white" if st.get_option("theme.base") == "light" else "plotly_dark",
-        title_font_color="black" if st.get_option("theme.base") == "light" else "white",
         font_color="black" if st.get_option("theme.base") == "light" else "white",
+        title_font_color="black" if st.get_option("theme.base") == "light" else "white",
         xaxis_title_font_color="black" if st.get_option("theme.base") == "light" else "white",
         yaxis_title_font_color="black" if st.get_option("theme.base") == "light" else "white",
     )
