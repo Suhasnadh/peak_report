@@ -6,63 +6,48 @@ import numpy as np
 import plotly.io as pio  # ✅ Added Plotly renderer fix
 
 # Set Plotly renderer for hosted environments
-pio.renderers.default = "browser"
+# Set the page configuration
+st.set_page_config(page_title="Housing Analysis Dashboard", layout="wide")
 
-# Custom CSS to handle both Light & Dark themes dynamically
-st.markdown("""
+# Theme Selection
+st.sidebar.header("Theme Selection")
+theme_choice = st.sidebar.radio("Choose Theme:", ["Light", "Dark"], index=0)
+
+# Apply Theme Dynamically
+if theme_choice == "Light":
+    theme_background = "white"
+    theme_text = "black"
+    plotly_template = "plotly_white"
+else:
+    theme_background = "#0e1117"
+    theme_text = "white"
+    plotly_template = "plotly_dark"
+
+# Custom CSS for Dynamic Themes
+st.markdown(f"""
     <style>
-        /* Apply dynamic color changes based on Streamlit theme */
-        :root {
-            --text-color: black;
-            --bg-color: white;
-        }
-        html[data-theme="dark"] {
-            --text-color: white;
-            --bg-color: #0e1117;
-        }
-        
-        body {
-            color: var(--text-color);
-            background-color: var(--bg-color);
-        }
-        
-        /* Make metric boxes look consistent with theme */
-        .stMetric {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin: 0.5rem 0;
-            border: 1px solid var(--text-color);
-        }
-        
-        /* Tab styling */
-        .stTabs [data-baseweb="tab-list"] {
-            gap: 8px;
-        }
-        .stTabs [data-baseweb="tab"] {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            border-radius: 4px 4px 0px 0px;
-            padding: 10px 20px;
-        }
-        .stTabs [aria-selected="true"] {
-            background-color: var(--text-color);
-            color: var(--bg-color);
-        }
+        body {{
+            background-color: {theme_background};
+            color: {theme_text};
+        }}
+        .stTabs [data-baseweb="tab"] {{
+            background-color: {theme_background};
+            color: {theme_text};
+        }}
     </style>
 """, unsafe_allow_html=True)
 
-# Function to apply theme colors to charts dynamically
+# Function to Apply Theme to Charts
 def update_chart_layout(fig):
     fig.update_layout(
-        template="plotly_white" if st.get_option("theme.base") == "light" else "plotly_dark",
-        font_color="black" if st.get_option("theme.base") == "light" else "white",
-        title_font_color="black" if st.get_option("theme.base") == "light" else "white",
-        xaxis_title_font_color="black" if st.get_option("theme.base") == "light" else "white",
-        yaxis_title_font_color="black" if st.get_option("theme.base") == "light" else "white",
+        template=plotly_template,
+        font_color=theme_text,
+        title_font_color=theme_text,
+        xaxis_title_font_color=theme_text,
+        yaxis_title_font_color=theme_text,
     )
     return fig
+
 
 # Helper Functions
 def get_sorted_unique_values(df, column):
