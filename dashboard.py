@@ -3,6 +3,10 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
+import plotly.io as pio  # ✅ Added Plotly renderer fix
+
+# Set Plotly renderer for hosted environments
+pio.renderers.default = "browser"
 
 # Set page config with dark theme
 st.set_page_config(
@@ -10,35 +14,35 @@ st.set_page_config(
     layout="wide",
 )
 
-# Custom CSS for dark theme
 st.markdown("""
     <style>
-    .stMetric {
-        background-color: #262730;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin: 0.5rem 0;
-        border: 1px solid #0e1117;
-    }
-    .css-1r6slb0 {color: #ffffff !important;}
-    .css-1wivap2 {color: #ffffff99 !important;}
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-    }
-    .stTabs [data-baseweb="tab"] {
-        background-color: #262730;
-        border-radius: 4px 4px 0px 0px;
-        padding: 10px 20px;
-        color: #ffffff;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #0e1117;
-    }
-    .stSelectbox [data-baseweb="select"] {
-        margin-top: 0.5rem;
-    }
+        /* Use Streamlit theme settings dynamically */
+        html[data-theme="light"] body {
+            color: black;
+        }
+        html[data-theme="dark"] body {
+            color: white;
+        }
+        .stMetric {
+            background-color: var(--background-color-secondary);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 0.5rem 0;
+            border: 1px solid var(--background-color-tertiary);
+        }
     </style>
 """, unsafe_allow_html=True)
+
+# 📌 Function to dynamically update chart colors
+def update_chart_layout(fig):
+    fig.update_layout(
+        template="plotly_white" if st.get_option("theme.base") == "light" else "plotly_dark",
+        title_font_color="black" if st.get_option("theme.base") == "light" else "white",
+        font_color="black" if st.get_option("theme.base") == "light" else "white",
+        xaxis_title_font_color="black" if st.get_option("theme.base") == "light" else "white",
+        yaxis_title_font_color="black" if st.get_option("theme.base") == "light" else "white",
+    )
+    return fig
 
 # Helper Functions
 def get_sorted_unique_values(df, column):
@@ -675,7 +679,7 @@ def main():
 
         # Tab 5: General Demographics
             with tab1:
-                st.header("📋 General Demographics")
+                st.header("📋 General Demographics Breakdown")
 
                 # Create Two Tabs: Analytics and Detailed View
                 analytics_tab, detailed_tab = st.tabs(["📊 Analytics", "📋 Detailed View"])
@@ -684,7 +688,7 @@ def main():
                 # Analytics Tab
                 # ----------------------------------
                 with analytics_tab:
-                    st.subheader("📊 Analytics")
+                    st.subheader("📊 General Demographics Analytics")
                     # Show total number of students before applying filters
 
                     # Create two columns for charts
